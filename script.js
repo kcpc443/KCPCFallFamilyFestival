@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyREyQtSvDJSyHXH8E1PRLUHYRtmeH0YRSpK1BkAemPXGxB3YXJFkIdnWLXaGbkDlBIQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxq4Q1CAaaA0V3byQ6K6_90n8sFc5FqPHZUVzBton7UaKtWFn2khqlz8d1oeLUhVdkW0g/exec";
 const STORAGE_KEY = "kcpc_ticket_v1";
 const MAX_ATTEMPTS = 4;
 const REQUEST_TIMEOUT_MS = 20000;
