@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbk0kwfjRtpOfGuR9OMT17ERC-WephCY9NAldCqgespckfK9zomL4sSUJ-7JNlodDE5g/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzG6-37mRP_D9_BZYVvI7iieSKASQDOkZLCzyZvLCW6LZ-5yijC56VDKifSGYGq3djrfg/exec";
 const STORAGE_KEY = "kcpc_storage_id";
 const PENDING_KEY = "kcpc_pending_id";
 const MAX_ATTEMPTS = 5;
@@ -53,6 +53,7 @@ let submissionId = loadPendingId();
 let isSubmitting = false;
 let isEditing = false;
 let currentTicket = null;
+let slowTimer = null;
 
 // ---------- Safe localStorage helpers ----------
 function saveTicket(ticket) {
@@ -76,11 +77,16 @@ function setSubmitting(on) {
   isSubmitting = on;
   submitBtn.disabled = on;
   cancelEditBtn.disabled = on;
+  clearTimeout(slowTimer);
   if (on) {
     submitBtn.textContent = isEditing ? "Saving..." : "Submitting...";
     loadingText.textContent = isEditing
       ? "Please wait, saving your changes..."
       : "Please wait, submitting your response...";
+    // After 8 seconds, ask people to stay put so they don't refresh or re-tap
+    slowTimer = setTimeout(() => {
+      loadingText.textContent = "Still working. Please keep this page open, this may take a moment.";
+    }, 8000);
   } else {
     submitBtn.textContent = isEditing ? "Save" : "Submit";
   }

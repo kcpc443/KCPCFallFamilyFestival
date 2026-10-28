@@ -76,7 +76,6 @@ function doPost(e) {
     // Update in place; the number never changes and no second row is created
     if (rowIndex !== -1) {
       const range = sheet.getRange(rowIndex, 2, 1, 4); // Name..Phone
-      range.setNumberFormats([["@", "@", "General", "@"]]); // text cells can't become formulas
       range.setValues([[name, church, guests, phone]]);
       SpreadsheetApp.flush();
       return respond({ status: "success", number: existingNumber });
@@ -94,7 +93,6 @@ function doPost(e) {
     const number = Math.max(stored, maxNumber + 1, COUNTER_START);
 
     const range = sheet.getRange(lastRow + 1, 1, 1, NUM_COLS);
-    range.setNumberFormats([["General", "@", "@", "General", "@", "@"]]);
     range.setValues([[number, name, church, guests, phone, submissionId]]);
     SpreadsheetApp.flush();
 
@@ -124,6 +122,10 @@ function respond(obj) {
 function setup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+  const rows = sheet.getMaxRows();
+  // Plain text so nothing typed can ever turn into a formula
+  sheet.getRange(1, 2, rows, 2).setNumberFormat("@"); // B:C Name, Church
+  sheet.getRange(1, 5, rows, 2).setNumberFormat("@"); // E:F Phone, Edit Key
   sheet.getRange(1, 1, 1, NUM_COLS).setValues([HEADERS]);
   sheet.setFrozenRows(1);
   sheet.hideColumns(NUM_COLS);
