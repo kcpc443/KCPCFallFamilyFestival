@@ -1,5 +1,5 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxq4Q1CAaaA0V3byQ6K6_90n8sFc5FqPHZUVzBton7UaKtWFn2khqlz8d1oeLUhVdkW0g/exec";
-const STORAGE_KEY = "kcpc_ticket_v1";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbk0kwfjRtpOfGuR9OMT17ERC-WephCY9NAldCqgespckfK9zomL4sSUJ-7JNlodDE5g/exec";
+const STORAGE_KEY = "kcpc_ticket_v2";
 const MAX_ATTEMPTS = 4;
 const REQUEST_TIMEOUT_MS = 20000;
 const MAX_GUESTS = 20;
@@ -11,8 +11,10 @@ const resultName = document.getElementById("result-name");
 const resultNumber = document.getElementById("result-number");
 const resultGuests = document.getElementById("result-guests");
 const submitBtn = document.getElementById("submit-btn");
+const cancelEditBtn = document.getElementById("cancel-edit-btn");
 const loadingText = document.getElementById("loading-text");
 const errorText = document.getElementById("error-text");
+const editBtn = document.getElementById("edit-btn");
 
 const nameInput = document.getElementById("name");
 const guestsInput = document.getElementById("guests");
@@ -22,10 +24,12 @@ const churchError = document.getElementById("church-error");
 const guestsError = document.getElementById("guests-error");
 const phoneError = document.getElementById("phone-error");
 
-// One ID per form fill. Every retry of the same submission reuses it,
-// so the server can return the original number instead of creating duplicates.
+// One ID per household registration. Retries reuse it (no duplicates), and it
+// doubles as the private key that lets this device edit its own record later.
 let submissionId = newSubmissionId();
 let isSubmitting = false;
+let isEditing = false;
+let currentTicket = null;
 
 function newSubmissionId() {
   if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -50,7 +54,15 @@ function clearTicket() {
 function setSubmitting(on) {
   isSubmitting = on;
   submitBtn.disabled = on;
-  submitBtn.textContent = on ? "Submitting..." : "Submit";
+  cancelEditBtn.disabled = on;
+  if (on) {
+    submitBtn.textContent = isEditing ? "Saving..." : "Submitting...";
+    loadingText.textContent = isEditing
+      ? "Please wait, saving your changes..."
+      : "Please wait, submitting your response...";
+  } else {
+    submitBtn.textContent = isEditing ? "Save" : "Submit";
+  }
   loadingText.classList.toggle("hidden", !on);
 }
 function showError(msg) {
@@ -143,6 +155,42 @@ async function submitWithRetry(payload) {
   throw lastError || new Error("Submission failed");
 }
 
+// ---------- Edit mode ----------
+function startEdit() {
+  if (!currentTicket) return;
+  isEditing = true;
+
+  // Prefill the form with what was previously submitted
+  nameInput.value = currentTicket.name || "";
+  guestsInput.value = currentTicket.guests || "";
+  phoneInput.value = currentTicket.phone || "";
+  document.querySelectorAll('input[name="church"]').forEach(r => {
+    r.checked = (r.value === currentTicket.church);
+  });
+
+  clearFieldErrors();
+  clearError();
+  cancelEditBtn.classList.remove("hidden");
+  setSubmitting(false); // refreshes the button label to "Save Changes"
+
+  resultContainer.classList.add("hidden");
+  formContainer.classList.remove("hidden");
+  nameInput.focus();
+}
+
+function cancelEdit() {
+  if (isSubmitting) return;
+  isEditing = false;
+  cancelEditBtn.classList.add("hidden");
+  clearFieldErrors();
+  clearError();
+  setSubmitting(false); // refreshes the button label to "Submit"
+  displayResult(currentTicket); // back to the result screen; edits are discarded
+}
+
+editBtn.addEventListener("click", startEdit);
+cancelEditBtn.addEventListener("click", cancelEdit);
+
 // ---------- Form Submission ----------
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -170,6 +218,7 @@ form.addEventListener("submit", async (e) => {
 
   const payload = {
     submissionId: submissionId,
+    isEdit: isEditing,
     name: name,
     church: selectedChurch.value,
     guests: guests,
@@ -178,12 +227,24 @@ form.addEventListener("submit", async (e) => {
 
   try {
     const data = await submitWithRetry(payload);
-    const ticket = { name: name, guests: guests, number: data.number };
+    const ticket = {
+      submissionId: submissionId,
+      number: data.number,
+      name: name,
+      church: selectedChurch.value,
+      guests: guests,
+      phone: phoneInput.value.trim()
+    };
+    currentTicket = ticket;
     saveTicket(ticket);
+    isEditing = false;
+    cancelEditBtn.classList.add("hidden");
     displayResult(ticket);
   } catch (err) {
     console.error(err);
-    showError("We couldn't submit your registration. Check your connection and tap Submit again, or see the front desk.");
+    showError(isEditing
+      ? "We couldn't save your changes. Check your connection and tap Save again, or see the front desk."
+      : "We couldn't submit your registration. Check your connection and tap Submit again, or see the front desk.");
   } finally {
     setSubmitting(false);
   }
@@ -193,7 +254,7 @@ form.addEventListener("submit", async (e) => {
 function displayResult(ticket) {
   resultName.textContent = ticket.name;
   resultNumber.textContent = "#" + ticket.number;
-  resultGuests.textContent = ticket.guests + (ticket.guests === 1 ? " guest" : " guests");
+  resultGuests.textContent = ticket.guests + (Number(ticket.guests) === 1 ? " guest" : " guests");
 
   loadingText.classList.add("hidden");
   formContainer.classList.add("hidden");
@@ -209,7 +270,9 @@ if (new URLSearchParams(location.search).has("reset")) {
 // Restore the ticket if the attendee refreshed or reopened the page
 (function restoreTicket() {
   const t = loadTicket();
-  if (t && t.number !== undefined && t.name) {
+  if (t && t.submissionId && t.number !== undefined && t.name) {
+    submissionId = t.submissionId; // same key, so edits still match their row
+    currentTicket = t;
     displayResult(t);
   }
 })();

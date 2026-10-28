@@ -1,0 +1,24 @@
+{
+  "name": "kcpcfallfamilyfestival",
+  "version": "1.0.0",
+  "description": "",
+  "main": "appsscript.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kcpc443/KCPCFallFamilyFestival.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kcpc443/KCPCFallFamilyFestival/issues"
+  },
+  "homepage": "https://github.com/kcpc443/KCPCFallFamilyFestival#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}
