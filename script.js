@@ -1,7 +1,8 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbk0kwfjRtpOfGuR9OMT17ERC-WephCY9NAldCqgespckfK9zomL4sSUJ-7JNlodDE5g/exec";
-const STORAGE_KEY = "kcpc_ticket_v2";
-const MAX_ATTEMPTS = 4;
-const REQUEST_TIMEOUT_MS = 20000;
+const STORAGE_KEY = "kcpc_storage_id";
+const PENDING_KEY = "kcpc_pending_id";
+const MAX_ATTEMPTS = 5;
+const REQUEST_TIMEOUT_MS = 15000;
 const MAX_GUESTS = 20;
 
 const form = document.getElementById("checkin-form");
@@ -24,19 +25,36 @@ const churchError = document.getElementById("church-error");
 const guestsError = document.getElementById("guests-error");
 const phoneError = document.getElementById("phone-error");
 
-// One ID per household registration. Retries reuse it (no duplicates), and it
-// doubles as the private key that lets this device edit its own record later.
-let submissionId = newSubmissionId();
+function newSubmissionId() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  if (window.crypto && crypto.getRandomValues) {
+    const b = new Uint8Array(16);
+    crypto.getRandomValues(b);
+    return "id-" + Array.from(b, x => x.toString(16).padStart(2, "0")).join("");
+  }
+  return "id-" + Date.now() + "-" + Math.random().toString(36).slice(2, 12);
+}
+
+// Keep the same ID across refreshes until a registration succeeds,
+// so a lost response can never turn into a second row.
+function loadPendingId() {
+  try {
+    const saved = localStorage.getItem(PENDING_KEY);
+    if (saved) return saved;
+    const fresh = newSubmissionId();
+    localStorage.setItem(PENDING_KEY, fresh);
+    return fresh;
+  } catch (e) { return newSubmissionId(); }
+}
+
+// One ID per household registration. Retries reuse it (no duplicates).
+// It doubles as the private key that lets this device edit its own record later.
+let submissionId = loadPendingId();
 let isSubmitting = false;
 let isEditing = false;
 let currentTicket = null;
 
-function newSubmissionId() {
-  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-  return "id-" + Date.now() + "-" + Math.random().toString(36).slice(2, 12);
-}
-
-// ---------- Safe localStorage helpers (may be unavailable) ----------
+// ---------- Safe localStorage helpers ----------
 function saveTicket(ticket) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ticket)); } catch (e) {}
 }
@@ -47,7 +65,10 @@ function loadTicket() {
   } catch (e) { return null; }
 }
 function clearTicket() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(PENDING_KEY);
+  } catch (e) {}
 }
 
 // ---------- UI helpers ----------
@@ -148,7 +169,7 @@ async function submitWithRetry(payload) {
     }
 
     if (attempt < MAX_ATTEMPTS - 1) {
-      // Exponential backoff + jitter so 1000 phones don't retry in lockstep
+      // Exponential backoff + jitter so many phones don't retry in lockstep
       await sleep(1000 * Math.pow(2, attempt) + Math.random() * 1000);
     }
   }
@@ -171,7 +192,7 @@ function startEdit() {
   clearFieldErrors();
   clearError();
   cancelEditBtn.classList.remove("hidden");
-  setSubmitting(false); // refreshes the button label to "Save Changes"
+  setSubmitting(false); // refreshes the button label to "Save"
 
   resultContainer.classList.add("hidden");
   formContainer.classList.remove("hidden");
@@ -242,9 +263,13 @@ form.addEventListener("submit", async (e) => {
     displayResult(ticket);
   } catch (err) {
     console.error(err);
-    showError(isEditing
-      ? "We couldn't save your changes. Check your connection and tap Save again, or see the front desk."
-      : "We couldn't submit your registration. Check your connection and tap Submit again, or see the front desk.");
+    if (err.message === "Registration not found") {
+      showError("We couldn't find your registration. Please see the front desk.");
+    } else {
+      showError(isEditing
+        ? "We couldn't save your changes. Check your connection and tap Save again, or see the front desk."
+        : "We couldn't submit your registration. Check your connection and tap Submit again, or see the front desk.");
+    }
   } finally {
     setSubmitting(false);
   }
@@ -264,6 +289,7 @@ function displayResult(ticket) {
 // Reset to start fresh on same device
 if (new URLSearchParams(location.search).has("reset")) {
   clearTicket();
+  submissionId = loadPendingId(); // fresh ID for the new registration
   history.replaceState(null, "", location.pathname);
 }
 
