@@ -2,7 +2,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxq4Q1CAaaA0V3byQ6K6
 const STORAGE_KEY = "kcpc_ticket_v1";
 const MAX_ATTEMPTS = 4;
 const REQUEST_TIMEOUT_MS = 20000;
-const MAX_GUESTS = 10;
+const MAX_GUESTS = 20;
 
 const form = document.getElementById("checkin-form");
 const formContainer = document.getElementById("form-container");
@@ -10,7 +10,6 @@ const resultContainer = document.getElementById("result-container");
 const resultName = document.getElementById("result-name");
 const resultNumber = document.getElementById("result-number");
 const resultGuests = document.getElementById("result-guests");
-const resetBtn = document.getElementById("reset-btn");
 const submitBtn = document.getElementById("submit-btn");
 const loadingText = document.getElementById("loading-text");
 const errorText = document.getElementById("error-text");
@@ -201,18 +200,11 @@ function displayResult(ticket) {
   resultContainer.classList.remove("hidden");
 }
 
-// ---------- Reset Form ----------
-resetBtn.addEventListener("click", (e) => {
-  e.preventDefault();
+// Reset to start fresh on same device
+if (new URLSearchParams(location.search).has("reset")) {
   clearTicket();
-  submissionId = newSubmissionId(); // fresh ID for the next registration
-  form.reset();
-  clearFieldErrors();
-  clearError();
-  setSubmitting(false);
-  resultContainer.classList.add("hidden");
-  formContainer.classList.remove("hidden");
-});
+  history.replaceState(null, "", location.pathname);
+}
 
 // Restore the ticket if the attendee refreshed or reopened the page
 (function restoreTicket() {
