@@ -1,5 +1,5 @@
-const STORAGE_KEY = "kcpc_storage_id_v2";
-const PENDING_KEY = "kcpc_pending_id_v2";
+const STORAGE_KEY = "kcpc_storage_id_v7";
+const PENDING_KEY = "kcpc_pending_id_v7";
 const MAX_ATTEMPTS = 5;
 const REQUEST_TIMEOUT_MS = 15000;
 const MAX_GUESTS = 20;
@@ -19,6 +19,7 @@ const editBtn = document.getElementById("edit-btn");
 const nameInput = document.getElementById("name");
 const guestsInput = document.getElementById("guests");
 const phoneInput = document.getElementById("phoneNumber");
+
 const nameError = document.getElementById("name-error");
 const churchError = document.getElementById("church-error");
 const guestsError = document.getElementById("guests-error");
