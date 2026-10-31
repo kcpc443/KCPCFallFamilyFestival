@@ -29,7 +29,7 @@
         <div>
           <label for="name" class="block text-sm font-semibold text-slate-700 mb-1.5">Main Contact Person's Name</label>
           <input type="text" id="name" maxlength="80" autocomplete="name" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800 text-base placeholder-slate-400 transition" required />
-          <p id="name-error" class="text-xs text-red-500 mt-1 hidden">Please enter name.</p>
+          <p id="name-error" class="text-xs text-red-500 mt-1 hidden">Please enter a name.</p>
         </div>
 
         <!-- Church Affiliation -->
@@ -62,7 +62,7 @@
         <!-- Phone Number -->
         <div>
           <label for="phoneNumber" class="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number</label>
-          <input type="tel" id="phoneNumber" maxlength="14" autocomplete="tel" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800 text-base placeholder-slate-400 transition" required />
+		  <input type="tel" id="phoneNumber" maxlength="20" autocomplete="tel" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800 text-base placeholder-slate-400 transition" required />
 		  <p id="phone-error" class="text-xs text-red-500 mt-1 hidden">Please enter a phone number.</p>
         </div>
 
@@ -88,8 +88,9 @@
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
         </div>
         <h2 class="text-2xl font-extrabold text-slate-800">Registration Complete!</h2>
-		<p class="mt-4 px-4 py-3 text-lg font-bold text-amber-900 bg-amber-100 border-2 border-amber-400 rounded-xl">Please show this screen to the front desk.</p>
-		<p class="mt-4 px-4 py-3 text-lg font-bold text-amber-900 bg-amber-100 border-2 border-amber-400 rounded-xl">이 화면을 체크인 데스크에 보여주세요.</p>
+		<p class="mt-4 px-4 py-3 text-lg font-bold text-orange-700 bg-orange-50 border-2 border-orange-500 rounded-xl">
+		  Please show this screen to the front desk.<br>이 화면을 체크인 데스크에 보여주세요.
+		</p>
       </div>
 
       <!-- Number Display -->
@@ -108,7 +109,7 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=4"></script>
   
 </body>
 </html>

@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzG6-37mRP_D9_BZYVvI7iieSKASQDOkZLCzyZvLCW6LZ-5yijC56VDKifSGYGq3djrfg/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzByWVfNv2GBQyIyCbprfUAx2gBQklsIamGX5LZKmXADzeEIfkna4erYfljg6lR6X3MrA/exec";
 const STORAGE_KEY = "kcpc_storage_id";
 const PENDING_KEY = "kcpc_pending_id";
 const MAX_ATTEMPTS = 5;
