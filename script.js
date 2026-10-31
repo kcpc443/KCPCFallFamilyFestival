@@ -1,4 +1,3 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzByWVfNv2GBQyIyCbprfUAx2gBQklsIamGX5LZKmXADzeEIfkna4erYfljg6lR6X3MrA/exec";
 const STORAGE_KEY = "kcpc_storage_id_v2";
 const PENDING_KEY = "kcpc_pending_id_v2";
 const MAX_ATTEMPTS = 5;
@@ -136,7 +135,7 @@ async function submitWithRetry(payload) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
     try {
-      const res = await fetch(SCRIPT_URL, {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbzByWVfNv2GBQyIyCbprfUAx2gBQklsIamGX5LZKmXADzeEIfkna4erYfljg6lR6X3MrA/exec", {
         method: "POST",
         mode: "cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
