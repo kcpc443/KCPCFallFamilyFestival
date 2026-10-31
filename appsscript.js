@@ -27,10 +27,8 @@ function doPost(e) {
   const name = clean(data.name, 80);
   const church = CHURCH_OPTIONS.indexOf(data.church) !== -1 ? data.church : "";
   const guests = Number(data.guests);
-  const digits = String(data.phoneNumber == null ? "" : data.phoneNumber).replace(/\D/g, "");
-  const phone = digits.length === 10
-    ? `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-    : "";
+  const phone = clean(data.phoneNumber, 30);
+
   const submissionId = clean(data.submissionId, 64);
   const isEdit = data.isEdit === true;
 

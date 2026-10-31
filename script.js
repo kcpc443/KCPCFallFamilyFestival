@@ -109,24 +109,6 @@ function flag(errorEl, inputEl) {
   if (inputEl) inputEl.classList.add("border-red-500");
 }
 
-// Auto-format phone number as user types
-phoneInput.addEventListener("input", (e) => {
-  let cleaned = e.target.value.replace(/\D/g, "").substring(0, 10);
-  let formatted = "";
-
-  if (cleaned.length > 6) {
-    formatted = `(${cleaned.substring(0, 3)}) ${cleaned.substring(3, 6)}-${cleaned.substring(6)}`;
-  } else if (cleaned.length > 3) {
-    formatted = `(${cleaned.substring(0, 3)}) ${cleaned.substring(3)}`;
-  } else if (cleaned.length > 0) {
-    formatted = `(${cleaned}`;
-  }
-
-  e.target.value = formatted;
-  phoneError.classList.add("hidden");
-  phoneInput.classList.remove("border-red-500");
-});
-
 // Clear individual errors as the user fixes them
 nameInput.addEventListener("input", () => {
   nameError.classList.add("hidden");
@@ -136,6 +118,11 @@ guestsInput.addEventListener("input", () => {
   guestsError.classList.add("hidden");
   guestsInput.classList.remove("border-red-500");
 });
+phoneInput.addEventListener("input", () => {
+  phoneError.classList.add("hidden");
+  phoneInput.classList.remove("border-red-500");
+});
+
 document.querySelectorAll('input[name="church"]').forEach(r =>
   r.addEventListener("change", () => churchError.classList.add("hidden"))
 );
@@ -229,7 +216,7 @@ form.addEventListener("submit", async (e) => {
   const selectedChurch = document.querySelector('input[name="church"]:checked');
   const guestsRaw = guestsInput.value.trim();
   const guests = Number(guestsRaw);
-  const rawPhone = phoneInput.value.replace(/\D/g, "");
+  const rawPhone = phoneInput.value.trim();
 
   // Validate everything, focusing the first invalid field
   let firstInvalid = null;
@@ -238,7 +225,7 @@ form.addEventListener("submit", async (e) => {
   if (!guestsRaw || !Number.isInteger(guests) || guests < 1 || guests > MAX_GUESTS) {
     flag(guestsError, guestsInput); firstInvalid = firstInvalid || guestsInput;
   }
-  if (rawPhone.length !== 10) { flag(phoneError, phoneInput); firstInvalid = firstInvalid || phoneInput; }
+  if (!rawPhone) { flag(phoneError, phoneInput); firstInvalid = firstInvalid || phoneInput; }
   if (firstInvalid) { firstInvalid.focus(); return; }
 
   setSubmitting(true);
